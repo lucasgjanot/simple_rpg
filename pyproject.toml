@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "A simple RPG game in python"
 readme = "README.md"
 authors = [
-    { name = "Lucas Galvao Janot", email = "lgjanot402@gmail.com" }
+    { name = "Lucas Galvao Janot"}
 ]
 requires-python = ">=3.11"
 dependencies = []
