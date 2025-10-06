@@ -4,15 +4,15 @@ from simple_rpg.item import Item
 
 class ArmorLevel(Enum):
     LEVEL_1 = ("Basic", 100)
-    LEVEL_2 = ("Superior", 200)
-    LEVEL_3 = ("Majestic", 300)
-    LEVEL_4 = ("Elite", 400)
-    LEVEL_5 = ("Legendary", 500)
+    LEVEL_2 = ("Polished", 200)
+    LEVEL_3 = ("Reinforced", 300)
+    LEVEL_4 = ("Superior", 400)
+    LEVEL_5 = ("Majestic", 500)
     LEVEL_6 = ("Mythic", 600)
     LEVEL_7 = ("Divine", 700)
     LEVEL_8 = ("Ancient", 800)
     LEVEL_9 = ("Ethereal", 900)
-    LEVEL_10 = ("Transcendent", 0)  # Final level; cost = 0
+    LEVEL_10 = ("Transcendent", 0)
 
     def __init__(self, description, upgrade_cost):
         self._description = description
@@ -34,10 +34,10 @@ class ArmorLevel(Enum):
             raise ValueError("Armor level must be between 1 and 10.")
 
 class ArmorMaterial(Enum):
-    LEVEL_1 = ("Leather", 300)
-    LEVEL_2 = ("Chainmail", 600)
-    LEVEL_3 = ("Plate", 900)
-    LEVEL_4 = ("Steel", 1200)
+    LEVEL_1 = ("Cloth", 300)
+    LEVEL_2 = ("Leather", 500)
+    LEVEL_3 = ("Chainmail", 800)
+    LEVEL_4 = ("Plate", 1100)
     LEVEL_5 = ("Dragonhide", 0)
 
 
@@ -101,7 +101,8 @@ class Armor(Item):
 
     @staticmethod
     def calculate_armor(level, material_level):
-        return level * 10 + material_level * 5
+        return level * 10 + material_level * 10
+
 
     @staticmethod
     def calculate_value(level, material_level):
@@ -126,6 +127,24 @@ class Armor(Item):
             return ArmorMaterial.from_level(self._material_level).upgrade_cost
         else:
             raise ValueError("Weapon is already at max level and material.")
+
+    def to_dict(self):
+        data = super().to_dict()
+        data.update({
+            "_level": self._level,
+            "_material_level": self._material_level,
+            "_armor": self._armor,
+        })
+        return data
+
+    @classmethod
+    def from_dict(cls, data):
+        level = data["_level"]
+        material_level = data["_material_level"]
+        armor = cls(level, material_level)
+        # _armor is recalculated in __init__, but if you want to set it directly:
+        # armor._armor = data["_armor"]
+        return armor
 
 
     def __str__(self):

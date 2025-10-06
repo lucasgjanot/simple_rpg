@@ -19,6 +19,18 @@ class Sword(Weapon):
         self._name = f"{level_desc} {material_name} Sword"
         self._description = "Swords are for stabbing or slashing a target"
 
+    def to_dict(self):
+        data = super().to_dict()
+        # Add any Sword-specific data if needed (level/material_level handled in Weapon)
+        return data
+
+    @classmethod
+    def from_dict(cls, data):
+        # reconstruct from saved level/material_level in base class data
+        level = data.get("_level", 1)
+        material_level = data.get("_material_level", 1)
+        return cls(level, material_level)
+
     def __str__(self):
         material = WeaponMaterial[f"LEVEL_{self.get_material_level()}"].name
         level_info = WeaponLevel.from_level(self.get_level()).description

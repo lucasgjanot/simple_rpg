@@ -1,76 +1,58 @@
 import unittest
-from simple_rpg.monster import Monster
-from simple_rpg.entity import Entity
-from simple_rpg.item import Item
-from unittest.mock import MagicMock
-import random
-
+from simple_rpg.monsters.monster import Monster, MonsterLevel
 
 class ConcreteMonster(Monster):
     def drop_item(self):
-        # Simulate item drop logic
-        return MagicMock(spec=Item, name="FakeItem")
+        return "Test Loot"
 
 
-class MonsterTests(unittest.TestCase):
+class TestMonster(unittest.TestCase):
 
     def setUp(self):
         self.monster = ConcreteMonster(
-            name="Test Goblin",
+            name="Goblin",
             level=3,
-            base_attack=15,
+            base_attack=10,
             base_armor=5,
-            base_max_health=80,
-            base_max_stamina=50,
-            xp_gain=150
+            base_max_health=30,
+            base_max_stamina=20
         )
 
-    def test_monster_initialization(self):
-        self.assertEqual(self.monster.get_name(), "Test Goblin")
+    def test_name_formatting(self):
+        self.assertEqual(self.monster.get_name(), "Strong Goblin")
+
+    def test_level_and_strength(self):
         self.assertEqual(self.monster.get_level(), 3)
-        self.assertEqual(self.monster.get_attack(), 15 + (3 - 1) * 3)
-        self.assertEqual(self.monster.get_armor(), 5 + (3 - 1) * 2)
-        self.assertEqual(self.monster.get_health(), self.monster.get_max_health())
-        self.assertEqual(self.monster.get_stamina(), self.monster.get_max_stamina())
-        self.assertEqual(self.monster.get_xp_gain(), 150)
+        self.assertEqual(self.monster.get_strength(), MonsterLevel.LEVEL_3)
+        self.assertEqual(self.monster.get_strength().description, "Strong")
+        self.assertEqual(self.monster.get_strength().multiplier, 1.5)
 
-    def test_drop_item_returns_item(self):
-        item = self.monster.drop_item()
-        self.assertIsInstance(item, Item)
+    def test_xp_gain_calculation(self):
+        expected_xp = int(50 * 1.5) 
+        self.assertEqual(self.monster.get_xp_gain(), expected_xp)
 
-    def test_str_output(self):
-        string_output = str(self.monster)
-        self.assertIn("Test Goblin", string_output)
-        self.assertIn("XP on defeat", string_output)
+    def test_drop_item(self):
+        self.assertEqual(self.monster.drop_item(), "Test Loot")
 
-    def test_repr_output(self):
-        repr_output = repr(self.monster)
-        self.assertIn("ConcreteMonster", repr_output)
-        self.assertIn("name='Test Goblin'", repr_output)
-        self.assertIn("xp_gain=150", repr_output)
+    def test_invalid_level_too_high(self):
+        with self.assertRaises(TypeError):
+            ConcreteMonster("Orc", 6, 12, 4, 40, 25)
 
-    def test_monster_is_alive(self):
-        self.assertTrue(self.monster.is_alive())
-        self.monster.take_damage(1000)  # Overkill
-        self.assertFalse(self.monster.is_alive())
+    def test_invalid_level_too_low(self):
+        with self.assertRaises(TypeError):
+            ConcreteMonster("Orc", 0, 12, 4, 40, 25)
 
-    def test_monster_take_damage_reduces_health(self):
-        health_before = self.monster.get_health()
-        self.monster.take_damage(10)
-        self.assertLess(self.monster.get_health(), health_before)
+    def test_str_contains_key_info(self):
+        result = str(self.monster)
+        self.assertIn("Strong Goblin", result)
+        self.assertIn("Level 3", result)
+        self.assertIn("XP on defeat", result)
 
-    def test_monster_restore_health_and_stamina(self):
-        self.monster.take_damage(30)
-        self.monster.use_stamina(20)
-
-        current_health = self.monster.get_health()
-        current_stamina = self.monster.get_stamina()
-
-        self.monster.restore_health(10)
-        self.monster.restore_stamina(10)
-
-        self.assertEqual(self.monster.get_health(), min(current_health + 10, self.monster.get_max_health()))
-        self.assertEqual(self.monster.get_stamina(), min(current_stamina + 10, self.monster.get_max_stamina()))
+    def test_repr_contains_all_info(self):
+        result = repr(self.monster)
+        self.assertIn("ConcreteMonster", result)
+        self.assertIn("level=3", result)
+        self.assertIn("xp_gain=75", result)
 
 
 if __name__ == '__main__':

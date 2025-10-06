@@ -7,9 +7,9 @@ class PotionType(Enum):
     STAMINA = "Stamina"
 
 class PotionLevel(Enum):
-    LEVEL_1 = ("Small", 20, 50)
-    LEVEL_2 = ("Medium", 50, 100)
-    LEVEL_3 = ("Large", 100, 200)
+    LEVEL_1 = ("Small", 40, 50)
+    LEVEL_2 = ("Medium", 80, 100)
+    LEVEL_3 = ("Large", 150, 200)
 
     @classmethod
     def get_description(cls, level: int) -> str:
@@ -53,6 +53,24 @@ class Potion(Item):
     def get_amount(self):
         return self._amount
     
+    def to_dict(self):
+        data = super().to_dict()
+        # add Potion-specific info
+        data.update({
+            "potiontype": self._potiontype.value,
+            "potionlevel": self._potionlevel,
+            "amount": self._amount,
+        })
+        return data
+
+    @classmethod
+    def from_dict(cls, data):
+        # Convert potiontype string back to enum
+        potion_type_enum = PotionType(data["potiontype"])
+        potion_level = data["potionlevel"]
+        return cls(potion_type_enum, potion_level)
+
+
     def __str__(self):
         return (f"{self._name} (Level {self.get_potionlevel()})\n"
                 f"Type: {self.get_potiontype().value}\n"

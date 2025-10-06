@@ -11,12 +11,12 @@ class WeaponLevel(Enum):
     LEVEL_2 = ("Superior", 200)
     LEVEL_3 = ("Majestic", 300)
     LEVEL_4 = ("Elite", 400)
-    LEVEL_5 = ("Legendary", 500)
-    LEVEL_6 = ("Mythic", 600)
-    LEVEL_7 = ("Divine", 700)
-    LEVEL_8 = ("Ancient", 800)
-    LEVEL_9 = ("Ethereal", 900)
-    LEVEL_10 = ("Transcendent", 0)  # Final level; cost = 0
+    LEVEL_5 = ("Legendary", 550)
+    LEVEL_6 = ("Mythic", 700)
+    LEVEL_7 = ("Divine", 900)
+    LEVEL_8 = ("Ancient", 1100)
+    LEVEL_9 = ("Ethereal", 1350)
+    LEVEL_10 = ("Transcendent", 0)
 
     def __init__(self, description, upgrade_cost):
         self._description = description
@@ -40,10 +40,10 @@ class WeaponLevel(Enum):
 
 class WeaponMaterial(Enum):
     LEVEL_1 = ("Wood", 300)
-    LEVEL_2 = ("Flint", 600)
-    LEVEL_3 = ("Copper", 900)
-    LEVEL_4 = ("Iron", 1200)
-    LEVEL_5 = ("Steel", 0)  # Final material
+    LEVEL_2 = ("Bronze", 500)
+    LEVEL_3 = ("Iron", 800)
+    LEVEL_4 = ("Mithril", 1100)
+    LEVEL_5 = ("Steel", 0)
 
     def __init__(self, name, upgrade_cost):
         self._name = name
@@ -124,6 +124,23 @@ class Weapon(Item, ABC):
             return WeaponMaterial.from_level(self._material_level).upgrade_cost
         else:
             raise ValueError("Weapon is already at max level and material.")
+        
+    def to_dict(self):
+        data = super().to_dict()
+        data.update({
+            "_level": self._level,
+            "_material_level": self._material_level,
+            "_damage": self._damage,
+        })
+        return data
+
+    @classmethod
+    def from_dict(cls, data):
+        # This will rarely be called directly but good to have
+        level = data["_level"]
+        material_level = data["_material_level"]
+        # Weapon is abstract, so raise error or return None
+        raise NotImplementedError("Use subclass from_dict")
 
     def __str__(self):
         return (

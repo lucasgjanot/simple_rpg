@@ -13,6 +13,18 @@ class Item:
     def get_value(self):
         return self._value
     
+    def to_dict(self):
+        return {
+            "type": self.__class__.__name__,
+            "name": self._name,
+            "description": self._description,
+            "value" : self._value
+        }
+    
+    @classmethod
+    def from_dict(cls, data):
+        return cls(data["name"], data["description"], data["value"])
+    
     def __str__(self):
         return (f"{self.get_name()}\n"
                 f"Description: {self.get_description()}\n"

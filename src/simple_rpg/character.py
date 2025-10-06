@@ -4,6 +4,7 @@ from simple_rpg.potions import Potion, PotionType, PotionLevel
 from simple_rpg.weapon import Weapon, WeaponLevel, WeaponMaterial
 from simple_rpg.armor import Armor, ArmorLevel, ArmorMaterial
 from collections import defaultdict
+from simple_rpg.load import item_from_dict
 
 
 class Character(Entity):
@@ -17,7 +18,7 @@ class Character(Entity):
 
     def _update_stats(self):
         super()._update_stats()
-        self._xp_next_level = int(100 * (1.2 ** (self._level - 1)))
+        self._xp_next_level = int(75 * (1.15 ** (self._level - 1)))
         weapon = self._equipped.get("weapon")
         if weapon:
             self._attack += weapon.get_damage()
@@ -39,24 +40,25 @@ class Character(Entity):
         if item not in self._inventory:
             raise ValueError("Item must be in inventory to equip.")
 
-        self._inventory.remove(item)
-
         if isinstance(item, Potion):
+            self._inventory.remove(item)
             self._equipped.setdefault('potions', []).append(item)
         elif isinstance(item, Weapon):
+            self._inventory.remove(item)
             current = self._equipped.get('weapon')
             if current:
                 self._inventory.append(current)
             self._equipped['weapon'] = item
         elif isinstance(item, Armor):
+            self._inventory.remove(item)
             current = self._equipped.get('armor')
             if current:
                 self._inventory.append(current)
             self._equipped['armor'] = item
         else:
-            self._inventory.append(item)
             raise ValueError("This item type cannot be equipped.")
         self._update_stats()
+
         
     def use_potion(self, potion):
         if not isinstance(potion, Potion):
@@ -133,11 +135,47 @@ class Character(Entity):
     def get_attack_stamina_cost(self):
         weapon = self.get_equipped_weapon()
         if weapon:
-            return super().get_attack_stamina_cost() + weapon.get_level() * 1.5
+            return super().get_attack_stamina_cost() + weapon.get_material_level()  # scales with material
         return super().get_attack_stamina_cost()
 
     def get_equipped(self):
         return self._equipped
+    
+
+    def to_dict(self):
+        return {
+            "name": self._name,
+            "level": self._level,
+            # other character attributes
+            "inventory": [item.to_dict() for item in self._inventory],
+            "equipped": {slot: (item.to_dict() if item else None) 
+                        for slot, item in self._equipped.items()},
+        }
+
+
+
+    @classmethod
+    def from_dict(cls, data):
+        char = cls(data["name"], data["level"], ...)  # fill as appropriate
+
+        # Load inventory
+        char._inventory = [item_from_dict(item_data) for item_data in data.get("inventory", [])]
+
+        # Load equipped items, if it's a dict of slot -> item(s)
+        equipped_data = data.get("equipped", {})
+        char._equipped = {}
+        for slot, item_data in equipped_data.items():
+            if isinstance(item_data, list):
+                char._equipped[slot] = [item_from_dict(i) for i in item_data]
+            elif item_data is None:
+                char._equipped[slot] = None
+            else:
+                char._equipped[slot] = item_from_dict(item_data)
+
+        # Load other character fields as needed
+
+        return char
+
 
     def __str__(self):
         equipped_weapon = self._equipped.get("weapon")
