@@ -35,4 +35,11 @@ class Item:
                 f"description={self.get_description()!r}, "
                 f"value={self.get_value()})")
     
+    def __eq__(self, value):
+        return (
+            (self._name == value.get_name()) and
+            (self._description == value.get_description()) and
+            (self._value == value.get_value())
+        )
+    
 

@@ -1,9 +1,9 @@
 import unittest
 from simple_rpg.character import Character
-from simple_rpg.potions import Potion, PotionType
-from simple_rpg.sword import Sword
-from simple_rpg.armor import Armor
-from simple_rpg.item import Item
+from simple_rpg.items.potions import Potion, PotionType
+from simple_rpg.items.sword import Sword
+from simple_rpg.items.armor import Armor
+from simple_rpg.items.item import Item
 
 
 class TestCharacter(unittest.TestCase):

@@ -1,76 +1,92 @@
 import unittest
-from simple_rpg.sword import Sword
+from simple_rpg.items.sword import Sword
+from simple_rpg.items.weapon import WeaponLevel, WeaponMaterial
+
 
 class TestSword(unittest.TestCase):
 
-    def setUp(self):
-        self.sword = Sword(level=1, material_level=1)
+    def test_valid_initialization(self):
+        sword = Sword(2, 3)
+        self.assertEqual(sword.get_level(), 2)
+        self.assertEqual(sword.get_material_level(), 3)
+        self.assertEqual(sword.get_damage(), 2 * 10 + 3 * 5)
+        self.assertIn("Superior", sword.get_name())
+        self.assertIn("Iron", sword.get_name())
+        self.assertEqual(sword.get_description(), "Swords are for stabbing or slashing a target")
 
-    def test_initialization(self):
-        self.assertEqual(self.sword.get_level(), 1)
-        self.assertEqual(self.sword.get_material_level(), 1)
-        self.assertEqual(self.sword.get_name(), "Basic Wood Sword")
-        self.assertEqual(self.sword.get_description(), "Swords are for stabbing or slashing a target")
-
-    def test_invalid_initialization_level(self):
+    def test_invalid_level(self):
         with self.assertRaises(ValueError):
-            Sword(level=0, material_level=1)
+            Sword(0, 3)
         with self.assertRaises(ValueError):
-            Sword(level=11, material_level=1)
+            Sword(11, 3)
 
-    def test_invalid_initialization_material_level(self):
+    def test_invalid_material_level(self):
         with self.assertRaises(ValueError):
-            Sword(level=1, material_level=0)
+            Sword(3, 0)
         with self.assertRaises(ValueError):
-            Sword(level=1, material_level=6)
+            Sword(3, 6)
 
-    def test_upgrade_increases_level(self):
-        self.sword._level = 1
-        self.sword._material_level = 1
-        self.sword.upgrade()
-        self.assertEqual(self.sword.get_level(), 2)
-        self.assertEqual(self.sword.get_material_level(), 1)
-
-    def test_upgrade_resets_level_and_increases_material_level(self):
-        # Set level to max
-        self.sword._level = Sword.MAX_LEVEL
-        self.sword._material_level = 1
-        self.sword.upgrade()
-        self.assertEqual(self.sword.get_level(), 1)
-        self.assertEqual(self.sword.get_material_level(), 2)
-
-    def test_upgrade_max_raises(self):
-        self.sword._level = Sword.MAX_LEVEL
-        self.sword._material_level = Sword.MAX_MATERIAL_LEVEL
-        with self.assertRaises(ValueError):
-            self.sword.upgrade()
-
-    def test_damage_calculation(self):
-        expected_damage = self.sword.calculate_damage(self.sword.get_level(), self.sword.get_material_level())
-        self.assertEqual(self.sword.get_damage(), expected_damage)
-
-    def test_value_calculation(self):
-        expected_value = self.sword.calculate_value(self.sword.get_level(), self.sword.get_material_level())
-        self.assertEqual(self.sword.get_value(), expected_value)
-
-    def test_str_contains_expected_info(self):
-        s = str(self.sword)
-        self.assertIn("Basic", s)
-        self.assertIn("Wood", s)
-        self.assertIn("Sword", s)
-        self.assertIn("Description", s)
-        self.assertIn("Level: 1", s)
-        self.assertIn("Material Level: 1", s)
+    def test_str_representation(self):
+        sword = Sword(4, 2)
+        s = str(sword)
+        self.assertIn("Elite", s)
+        self.assertIn("Bronze", s)
         self.assertIn("Damage", s)
         self.assertIn("Value", s)
 
-    def test_repr_contains_expected_info(self):
-        r = repr(self.sword)
-        self.assertIn("Sword(", r)
+    def test_repr_representation(self):
+        sword = Sword(1, 1)
+        r = repr(sword)
+        self.assertIn("Sword(name=", r)
         self.assertIn("level=1", r)
         self.assertIn("material_level=1", r)
-        self.assertIn("damage=", r)
-        self.assertIn("value=", r)
+
+    def test_upgrade_level(self):
+        sword = Sword(1, 1)
+        sword.upgrade()
+        self.assertEqual(sword.get_level(), 2)
+        self.assertEqual(sword.get_material_level(), 1)
+
+    def test_upgrade_material(self):
+        sword = Sword(10, 2)
+        sword.upgrade()
+        self.assertEqual(sword.get_level(), 1)
+        self.assertEqual(sword.get_material_level(), 3)
+
+    def test_upgrade_at_max(self):
+        sword = Sword(10, 5)
+        with self.assertRaises(ValueError):
+            sword.upgrade()
+
+    def test_get_upgrade_cost_level(self):
+        sword = Sword(4, 1)
+        self.assertEqual(sword.get_upgrade_cost(), WeaponLevel.from_level(4).upgrade_cost)
+
+    def test_get_upgrade_cost_material(self):
+        sword = Sword(10, 2)
+        self.assertEqual(sword.get_upgrade_cost(), WeaponMaterial.from_level(2).upgrade_cost)
+
+    def test_get_upgrade_cost_at_max(self):
+        sword = Sword(10, 5)
+        with self.assertRaises(ValueError):
+            sword.get_upgrade_cost()
+
+    def test_to_dict(self):
+        sword = Sword(3, 2)
+        data = sword.to_dict()
+        self.assertEqual(data["_level"], 3)
+        self.assertEqual(data["_material_level"], 2)
+        self.assertEqual(data["_damage"], sword.get_damage())
+
+    def test_from_dict(self):
+        original = Sword(5, 4)
+        data = original.to_dict()
+        new_sword = Sword.from_dict(data)
+        self.assertEqual(new_sword.get_level(), 5)
+        self.assertEqual(new_sword.get_material_level(), 4)
+        self.assertEqual(new_sword.get_damage(), original.get_damage())
+        self.assertEqual(new_sword.get_value(), original.get_value())
+        self.assertEqual(new_sword.get_name(), original.get_name())
 
 
 if __name__ == "__main__":

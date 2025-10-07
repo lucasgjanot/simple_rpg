@@ -1,5 +1,5 @@
 from simple_rpg.monsters.monster import Monster
-from simple_rpg.item import Item
+from simple_rpg.items.item import Item
 import random
 
 class Dragon(Monster):
@@ -12,18 +12,25 @@ class Dragon(Monster):
             base_max_health=200,
             base_max_stamina=150
         )
+        self._drops = [
+            Item("Dragon Scale", "Tough and magical", 500),
+            Item("Dragon Claw", "Sharp and deadly", 450),
+            Item("Dragon Heart", "Powerful core of the beast", 1000),
+            Item("Ancient Dragon Horn", "Rare and valuable", 1500),
+            Item("Dragon's Crown", "Symbol of dominance", 3000)
+        ]
 
     def drop_item(self):
         base_drops = [
-            (Item("Dragon Scale", "Tough and magical", 500), 0.4),
-            (Item("Dragon Claw", "Sharp and deadly", 450), 0.3),
-            (Item("Dragon Heart", "Powerful core of the beast", 1000), 0.1),
+            (self._drops[0], 0.4),
+            (self._drops[1], 0.3),
+            (self._drops[2], 0.1),
         ]
 
         if self._level >= 4:
-            base_drops.append((Item("Ancient Dragon Horn", "Rare and valuable", 1500), 0.15))
+            base_drops.append((self._drops[3], 0.15))
         if self._level >= 5:
-            base_drops.append((Item("Dragon’s Crown", "Symbol of dominance", 3000), 0.05))
+            base_drops.append((self._drops[4], 0.05))
 
         total_prob = sum(prob for _, prob in base_drops)
         normalized_drops = [(item, prob / total_prob) for item, prob in base_drops]

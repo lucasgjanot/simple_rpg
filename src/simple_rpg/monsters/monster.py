@@ -44,6 +44,8 @@ class Monster(Entity, ABC):
 
         self._xp_gain = self._calculate_xp_gain()
 
+        self._drops = None
+
         super().__init__(full_name, level, base_attack, base_armor,
                          base_max_health, base_max_stamina)
 
@@ -60,6 +62,9 @@ class Monster(Entity, ABC):
     @abstractmethod
     def drop_item(self):
         pass
+
+    def get_drops(self):
+        return self._drops
 
     def __str__(self):
         return (
@@ -78,3 +83,9 @@ class Monster(Entity, ABC):
             f"attack={self.get_attack()}, armor={self.get_armor()}, "
             f"xp_gain={self._xp_gain})"
         )
+
+    def attack_target(self, target):   
+        if self._stamina < self._max_stamina:
+            self.restore_stamina(self.get_attack_stamina_cost()/2)
+        return super().attack_target(target)
+    

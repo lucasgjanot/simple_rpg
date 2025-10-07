@@ -1,4 +1,4 @@
-from simple_rpg.weapon import Weapon, WeaponMaterial, WeaponLevel
+from simple_rpg.items.weapon import Weapon, WeaponMaterial, WeaponLevel
 
 class Sword(Weapon):
     

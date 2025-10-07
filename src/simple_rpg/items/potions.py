@@ -1,10 +1,17 @@
 from enum import Enum
-from abc import ABC, abstractmethod
-from simple_rpg.item import Item
+from simple_rpg.items.item import Item
 
 class PotionType(Enum):
     HEALTH = "Health"
     STAMINA = "Stamina"
+
+    def __init__(self, type):
+        self._type = type
+
+    @property
+    def type(self):
+        return self._type
+        
 
 class PotionLevel(Enum):
     LEVEL_1 = ("Small", 40, 50)
@@ -47,6 +54,9 @@ class Potion(Item):
     def get_potionlevel(self):
         return self._potionlevel
     
+    def get_potionlevel_description(self):
+        return PotionLevel.get_description(self._potionlevel)[0]
+
     def get_potiontype(self):
         return self._potiontype
     
@@ -81,3 +91,9 @@ class Potion(Item):
     def __repr__(self):
         return (f"Potion(name={self.get_name()!r}, type={self.get_potiontype().value!r}, "
                 f"level={self.get_potionlevel()}, amount={self.get_amount()}, value={self.get_value()})")
+    
+    def __eq__(self, value):
+        return (
+            (self.get_potionlevel() == value.get_potionlevel()) and
+            (self.get_potiontype() == value.get_potiontype())
+        )

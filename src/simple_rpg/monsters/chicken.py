@@ -1,5 +1,5 @@
 from simple_rpg.monsters.monster import Monster
-from simple_rpg.item import Item
+from simple_rpg.items.item import Item
 import random
 
 class Chicken(Monster):
@@ -12,16 +12,21 @@ class Chicken(Monster):
             base_max_health=10,
             base_max_stamina=15
         )
+        self._drops = [
+            Item("Feather", "A soft feather", 1),
+            Item("Raw Chicken Meat", "Better cook it first!", 5),
+            Item("Golden Feather", "Rare and shiny!", 50)
+        ]
 
     def drop_item(self):
         base_drops = [
-            (Item("Feather", "A soft feather", 1), 0.7),
-            (Item("Raw Chicken Meat", "Better cook it first!", 5), 0.3),
+            (self._drops[0], 0.7),
+            (self._drops[1], 0.3),
         ]
 
         # Higher levels slightly increase chance of meat
         if self._level >= 3:
-            base_drops.append((Item("Golden Feather", "Rare and shiny!", 50), 0.05))
+            base_drops.append((self._drops[3], 0.05))
 
         total_prob = sum(prob for _, prob in base_drops)
         normalized_drops = [(item, prob / total_prob) for item, prob in base_drops]

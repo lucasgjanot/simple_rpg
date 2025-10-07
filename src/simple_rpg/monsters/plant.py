@@ -1,5 +1,5 @@
 from simple_rpg.monsters.monster import Monster
-from simple_rpg.item import Item
+from simple_rpg.items.item import Item
 import random
 
 class Plant(Monster):
@@ -12,23 +12,31 @@ class Plant(Monster):
             base_max_health=20,
             base_max_stamina=10
         )
+        self._drops = [
+            Item("Leaf", "Just a leaf", 10),
+            Item("Poison Spores", "Watch out! They are poisonous", 25),
+            Item("Sap", "Sticky and maybe useful", 15),
+            Item("Rare Seed", "A mysterious glowing seed", 100),
+            Item("Ancient Root", "Old and powerful root", 250),
+            Item("Golden Thorn", "Extremely rare and valuable", 500)
+        ]
 
     def drop_item(self):
         # Base items always available
         base_drops = [
-            (Item("Leaf", "Just a leaf", 10), 0.5),
-            (Item("Poison Spores", "Watch out! They are poisonous", 25), 0.3),
+            (self._drops[0], 0.5),
+            (self._drops[1], 0.3),
         ]
 
         # Higher level unlocks
         if self._level >= 2:
-            base_drops.append((Item("Sap", "Sticky and maybe useful", 15), 0.15))
+            base_drops.append((self._drops[2], 0.15))
         if self._level >= 3:
-            base_drops.append((Item("Rare Seed", "A mysterious glowing seed", 100), 0.08))
+            base_drops.append((self._drops[3], 0.08))
         if self._level >= 4:
-            base_drops.append((Item("Ancient Root", "Old and powerful root", 250), 0.05))
+            base_drops.append((self._drops[4], 0.05))
         if self._level >= 5:
-            base_drops.append((Item("Golden Thorn", "Extremely rare and valuable", 500), 0.02))
+            base_drops.append((self._drops[5], 0.02))
 
         # Normalize probabilities (optional, for safety)
         total_prob = sum(prob for _, prob in base_drops)

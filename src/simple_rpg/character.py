@@ -1,20 +1,21 @@
 from simple_rpg.entity import Entity
-from simple_rpg.item import Item
-from simple_rpg.potions import Potion, PotionType, PotionLevel
-from simple_rpg.weapon import Weapon, WeaponLevel, WeaponMaterial
-from simple_rpg.armor import Armor, ArmorLevel, ArmorMaterial
+from simple_rpg.items.item import Item
+from simple_rpg.items.potions import Potion, PotionType
+from simple_rpg.items.weapon import Weapon
+from simple_rpg.items.armor import Armor
 from collections import defaultdict
 from simple_rpg.load import item_from_dict
 
 
 class Character(Entity):
 
-    def __init__(self, name):
+    def __init__(self, name, level=1, base_attack=10, base_armor=0, base_max_health=100, base_max_stamina=100):
         self._inventory = []
         self._equipped = {}
-        self._gold = 100
+        self._gold = 0
         self._xp = 0
-        super().__init__(name, level=1, base_attack=10, base_armor=0, base_max_health=100, base_max_stamina=100)
+        super().__init__(name, level, base_attack, base_armor, base_max_health, base_max_stamina)
+        self._update_stats()
 
     def _update_stats(self):
         super()._update_stats()
@@ -59,7 +60,45 @@ class Character(Entity):
             raise ValueError("This item type cannot be equipped.")
         self._update_stats()
 
-        
+    def unequip_item(self,item):
+        if not isinstance(item, Item):
+            raise ValueError("You can only unequip items")
+        if isinstance(item, Weapon):
+            if self._equipped.get("weapon"):
+                if item == self._equipped["weapon"]:
+                    self._equipped.setdefault('weapon', item)
+                    self._inventory.append(item)
+                else:
+                    return ValueError("Item is not equipped")
+        if isinstance(item, Armor):
+            if self._equipped.get("armor"):
+                if item == self._equipped["armor"]:
+                    self._equipped.setdefault('armor', item)
+                    self._inventory.append(item)
+                else:
+                    return ValueError("Item is not equipped") 
+        if isinstance(item, Potion):
+            if self._equipped.get("potions"):
+                if item in self._equipped["potions"]:
+                    index = self._equipped["potions"].find(item)
+                    del self._equipped["potions"][index]
+                    self._inventory.append(item)
+                else:
+                    return ValueError("Item is not equipped")
+        return ValueError("Item is not equipped") 
+    
+
+    def sell_item(self,item):
+        if not isinstance(item, Item):
+            raise ValueError("You can only sell items")
+        if not item in self._inventory:
+            raise ValueError("You can't sell items you don't have or are equipped")
+        index = self._inventory.find(item)
+        del self._inventory[index]
+        self.earn_gold(item.get_value())
+
+
+
     def use_potion(self, potion):
         if not isinstance(potion, Potion):
             raise ValueError("Item must be a Potion.")
@@ -78,31 +117,45 @@ class Character(Entity):
 
         equipped_potions.remove(potion)
 
-
     def get_equipped_armor(self):
-        if self._equipped.get("armor"):
-            return self._equipped["armor"]
-        return None
-    
+        return self._equipped.get("armor", None)
+
     def get_equipped_weapon(self):
-        if self._equipped.get("weapon"):
-            return self._equipped["weapon"]
-        return None
+        return self._equipped.get("weapon", None)
+    
+    def get_equipped_potions(self):
+        return self._equipped.get("potions", None)
+    
+    def get_inventory(self):
+        return self._inventory
 
     def get_gold(self):
         return self._gold
     
+    def earn_gold(self,amount):
+        if amount < 0:
+            raise ValueError("Amount to earn cannot be negative.")
+        self._gold += amount
+
+
     def spend_gold(self, amount):
+        if amount < 0:
+            raise ValueError("Amount to spend cannot be negative.")
         if self._gold < amount:
             raise ValueError("Not enough gold.")
         self._gold -= amount
 
     def upgrade_item(self, item):
-        if item not in self._inventory and item not in self._equipped.values():
-            raise ValueError("Item must be in inventory or equipped to upgrade.")
-
         if not isinstance(item, (Weapon, Armor)):
             raise ValueError("Only weapons and armors can be upgraded.")
+        if isinstance(item, Armor):
+            if self._equipped.get("armor"):
+                if item != self._equipped["armor"]:
+                    raise ValueError("Item must be in  equipped to upgrade.")
+        if isinstance(item, Weapon):
+            if self._equipped.get("weapon"):
+                if item != self._equipped["weapon"]:
+                    raise ValueError("Item must be in equipped to upgrade.")
 
         try:
             upgrade_cost = item.get_upgrade_cost()
@@ -116,8 +169,7 @@ class Character(Entity):
         item.upgrade()
         self._update_stats()
 
-        print(f"{item.get_name()} upgraded! Gold remaining: {self._gold}")
-
+        return f"{item.get_name()} upgraded! Gold remaining: {self._gold}"
 
     def gain_xp(self, amount):
         self._xp += amount
@@ -135,33 +187,44 @@ class Character(Entity):
     def get_attack_stamina_cost(self):
         weapon = self.get_equipped_weapon()
         if weapon:
-            return super().get_attack_stamina_cost() + weapon.get_material_level()  # scales with material
+            return super().get_attack_stamina_cost() + weapon.get_material_level()
         return super().get_attack_stamina_cost()
 
     def get_equipped(self):
         return self._equipped
-    
 
     def to_dict(self):
         return {
             "name": self._name,
             "level": self._level,
-            # other character attributes
+            "xp": self._xp,
+            "gold": self._gold,
             "inventory": [item.to_dict() for item in self._inventory],
-            "equipped": {slot: (item.to_dict() if item else None) 
-                        for slot, item in self._equipped.items()},
+            "equipped": {
+                slot: ([item.to_dict() for item in items] if isinstance(items, list) else (items.to_dict() if items else None))
+                for slot, items in self._equipped.items()
+            },
         }
-
-
 
     @classmethod
     def from_dict(cls, data):
-        char = cls(data["name"], data["level"], ...)  # fill as appropriate
+        # Create character with minimal required args
+        char = cls(
+            name=data["name"],
+            level=data.get("level", 1),
+            base_attack=10,      # Or pull from data if you save it
+            base_armor=0,
+            base_max_health=100,
+            base_max_stamina=100,
+        )
+
+        char._xp = data.get("xp", 0)
+        char._gold = data.get("gold", 100)
 
         # Load inventory
         char._inventory = [item_from_dict(item_data) for item_data in data.get("inventory", [])]
 
-        # Load equipped items, if it's a dict of slot -> item(s)
+        # Load equipped items
         equipped_data = data.get("equipped", {})
         char._equipped = {}
         for slot, item_data in equipped_data.items():
@@ -172,28 +235,26 @@ class Character(Entity):
             else:
                 char._equipped[slot] = item_from_dict(item_data)
 
-        # Load other character fields as needed
+        # Update stats after loading everything
+        char._update_stats()
+
+        # You might want to restore health and stamina to max or from saved data if saved
 
         return char
-
 
     def __str__(self):
         equipped_weapon = self._equipped.get("weapon")
         equipped_armor = self._equipped.get("armor")
         potions = self._equipped.get("potions", [])
 
-        # Count potions by type and level label
-
-
-        potion_counts = defaultdict(lambda: defaultdict(int))  # {PotionType: {level_label: count}}
+        potion_counts = defaultdict(lambda: defaultdict(int))
 
         for potion in potions:
             potion_type = potion.get_potiontype()
-            potion_level = potion.get_potionlevel()
-            level_label = potion_level.value[0]  # e.g. "Small", "Medium"
+            potion_level = potion.get_potionlevel_description()
+            level_label = potion_level  # e.g. "Small", "Medium"
             potion_counts[potion_type][level_label] += 1
 
-        # Build potion display string
         if not potion_counts:
             potion_display = "  None"
         else:
@@ -215,16 +276,23 @@ class Character(Entity):
         ]
         return "\n".join(lines)
 
-    
     def __repr__(self):
+        equipped_repr = []
+        for k, v in self._equipped.items():
+            if isinstance(v, list):
+                equipped_repr.append(f"{k}: {len(v)} items")
+            elif isinstance(v, Item):
+                equipped_repr.append(f"{k}: {v.get_name()}")
+            else:
+                equipped_repr.append(f"{k}: None")
+
         return (
             f"{self.__class__.__name__}("
             f"name={self.get_name()!r}, level={self.get_level()}, xp={self.get_xp()}, "
             f"gold={self.get_gold()}, "
             f"inventory_size={len(self._inventory)}, "
-            f"equipped={{{', '.join(f'{k}: {v.get_name() if isinstance(v, Item) else len(v)}' for k, v in self._equipped.items())}}}, "
+            f"equipped={{{', '.join(equipped_repr)}}}, "
             f"health={self.get_health()}, stamina={self.get_stamina()}"
             ")"
         )
-
 

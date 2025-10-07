@@ -1,6 +1,5 @@
 import unittest
-from enum import Enum
-from simple_rpg.weapon import Weapon, WeaponLevel, WeaponMaterial
+from simple_rpg.items.weapon import Weapon, WeaponLevel, WeaponMaterial
 
 
 
@@ -14,83 +13,79 @@ class ConcreteWeapon(Weapon):
         self._value = self.calculate_value(self._level, self._material_level)
 
 
+class TestWeaponCore(unittest.TestCase):
 
-class TestWeaponClass(unittest.TestCase):
+    def test_initialization(self):
+        weapon = ConcreteWeapon(1, 1)
+        self.assertEqual(weapon.get_level(), 1)
+        self.assertEqual(weapon.get_material_level(), 1)
+        self.assertEqual(weapon.get_damage(), 1 * 10 + 1 * 5)
+        self.assertEqual(weapon.get_value(), 50 + 20 + 30)
 
-    def setUp(self):
-
-        self.weapon = ConcreteWeapon(level=1, material_level=1)
-
-    def test_initial_stats(self):
-        self.assertEqual(self.weapon.get_level(), 1)
-        self.assertEqual(self.weapon.get_material_level(), 1)
-        self.assertEqual(self.weapon.get_damage(), 10 * 1 + 5 * 1)
-        self.assertEqual(self.weapon._name, "Basic Wood Sword")
-        self.assertIn("sword", self.weapon._description.lower())
-    
     def test_upgrade_level(self):
-
-        for lvl in range(1, Weapon.MAX_LEVEL):
-            self.weapon.upgrade()
-            self.assertEqual(self.weapon.get_level(), lvl + 1)
-            self.assertEqual(self.weapon.get_material_level(), 1)
+        weapon = ConcreteWeapon(1, 1)
+        weapon.upgrade()
+        self.assertEqual(weapon.get_level(), 2)
+        self.assertEqual(weapon.get_material_level(), 1)
 
     def test_upgrade_material(self):
+        weapon = ConcreteWeapon(10, 1)
+        weapon.upgrade()
+        self.assertEqual(weapon.get_level(), 1)
+        self.assertEqual(weapon.get_material_level(), 2)
 
-        self.weapon._level = Weapon.MAX_LEVEL
-        self.weapon._material_level = 1
-        self.weapon._update_stats()
-
-        self.weapon.upgrade()
-        self.assertEqual(self.weapon.get_level(), 1)  
-        self.assertEqual(self.weapon.get_material_level(), 2)
-
-    def test_upgrade_max(self):
-        self.weapon._level = Weapon.MAX_LEVEL
-        self.weapon._material_level = Weapon.MAX_MATERIAL_LEVEL
-        self.weapon._update_stats()
-
-        with self.assertRaises(ValueError) as context:
-            self.weapon.upgrade()
-        self.assertIn("already at max level", str(context.exception))
-
-    def test_calculate_damage_and_value(self):
-        damage = ConcreteWeapon.calculate_damage(3, 2)
-        value = ConcreteWeapon.calculate_value(3, 2)
-        self.assertEqual(damage, 3 * 10 + 2 * 5)
-        self.assertEqual(value, 50 + 20 * 3 + 30 * 2)
-
-    def test_get_upgrade_cost_level(self):
-        self.weapon._level = 2
-        self.weapon._material_level = 1
-        self.weapon._update_stats()
-        cost = self.weapon.get_upgrade_cost()
-        self.assertEqual(cost, WeaponLevel.LEVEL_2.upgrade_cost)
-
-    def test_get_upgrade_cost_material(self):
-        self.weapon._level = Weapon.MAX_LEVEL
-        self.weapon._material_level = 2
-        self.weapon._update_stats()
-        cost = self.weapon.get_upgrade_cost()
-        self.assertEqual(cost, WeaponMaterial.LEVEL_2.upgrade_cost)
-
-    def test_get_upgrade_cost_max_raises(self):
-        self.weapon._level = Weapon.MAX_LEVEL
-        self.weapon._material_level = Weapon.MAX_MATERIAL_LEVEL
-        self.weapon._update_stats()
+    def test_upgrade_at_max(self):
+        weapon = ConcreteWeapon(10, 5)
         with self.assertRaises(ValueError):
-            self.weapon.get_upgrade_cost()
+            weapon.upgrade()
 
-    def test_str_repr(self):
-        s = str(self.weapon)
-        r = repr(self.weapon)
-        self.assertIn(self.weapon._name, s)
-        self.assertIn("Damage", s)
-        self.assertIn("Upgrade Cost", s)
-        self.assertIn("ConcreteWeapon", r)
-        self.assertIn("level=", r)
-        self.assertIn("material_level=", r)
+    def test_upgrade_cost_level(self):
+        weapon = ConcreteWeapon(3, 1)
+        cost = weapon.get_upgrade_cost()
+        self.assertEqual(cost, WeaponLevel.from_level(3).upgrade_cost)
+
+    def test_upgrade_cost_material(self):
+        weapon = ConcreteWeapon(10, 2)
+        cost = weapon.get_upgrade_cost()
+        self.assertEqual(cost, WeaponMaterial.from_level(2).upgrade_cost)
+
+    def test_upgrade_cost_at_max(self):
+        weapon = ConcreteWeapon(10, 5)
+        with self.assertRaises(ValueError):
+            weapon.get_upgrade_cost()
+
+    def test_to_dict(self):
+        weapon = ConcreteWeapon(4, 2)
+        data = weapon.to_dict()
+        self.assertIn("_level", data)
+        self.assertIn("_material_level", data)
+        self.assertIn("_damage", data)
+        self.assertEqual(data["_level"], 4)
+        self.assertEqual(data["_material_level"], 2)
+
+    def test_from_dict_raises(self):
+        data = {
+            "_level": 3,
+            "_material_level": 1,
+            "_damage": 35
+        }
+        with self.assertRaises(NotImplementedError):
+            Weapon.from_dict(data)
+
+    def test_str_representation(self):
+        weapon = ConcreteWeapon(3, 2)
+        string = str(weapon)
+        self.assertIn("Level 3", string)
+        self.assertIn("Damage", string)
+        self.assertIn("Upgrade Cost", string)
+
+    def test_repr_representation(self):
+        weapon = ConcreteWeapon(2, 1)
+        rep = repr(weapon)
+        self.assertIn("ConcreteWeapon", rep)
+        self.assertIn("level=2", rep)
+        self.assertIn("material_level=1", rep)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

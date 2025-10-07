@@ -1,5 +1,5 @@
 from enum import Enum
-from simple_rpg.item import Item
+from simple_rpg.items.item import Item
 
 
 class ArmorLevel(Enum):

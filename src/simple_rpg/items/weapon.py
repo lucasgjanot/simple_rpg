@@ -1,10 +1,6 @@
 from enum import Enum
 from abc import ABC, abstractmethod
-from simple_rpg.item import Item
-
-class WeaponType(Enum):
-    MELEE = "MELEE"
-
+from simple_rpg.items.item import Item
 
 class WeaponLevel(Enum):
     LEVEL_1 = ("Basic", 100)

@@ -1,10 +1,10 @@
 # load.py
 
 import json
-from simple_rpg.item import Item
-from simple_rpg.potions import Potion
-from simple_rpg.sword import Sword
-from simple_rpg.armor import Armor
+from simple_rpg.items.item import Item
+from simple_rpg.items.potions import Potion
+from simple_rpg.items.sword import Sword
+from simple_rpg.items.armor import Armor
 # import your other item classes here
 
 # Map item "type" string to class for loading
@@ -50,7 +50,7 @@ def load_game(filename, character_class):
     """
     with open(filename, "r") as f:
         data = json.load(f)
-
+    print
     character = character_class.from_dict(data)
     return character
 
