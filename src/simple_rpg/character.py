@@ -93,8 +93,7 @@ class Character(Entity):
             raise ValueError("You can only sell items")
         if not item in self._inventory:
             raise ValueError("You can't sell items you don't have or are equipped")
-        index = self._inventory.find(item)
-        del self._inventory[index]
+        self._inventory.remove(item)
         self.earn_gold(item.get_value())
 
 
