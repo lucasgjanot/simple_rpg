@@ -45,7 +45,7 @@ pip install Pillow
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/your-username/simple_rpg.git
+git clone https://github.com/lucasgjanot/simple_rpg.git
 cd simple_rpg
 ```
 
