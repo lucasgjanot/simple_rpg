@@ -16,7 +16,7 @@ class TestCharacter(unittest.TestCase):
         self.assertEqual(self.char.get_level(), 1)
         self.assertEqual(self.char.get_health(), 100)
         self.assertEqual(self.char.get_stamina(), 100)
-        self.assertEqual(self.char.get_gold(), 100)
+        self.assertEqual(self.char.get_gold(), 0)
 
     def test_equip_weapon(self):
         sword = Sword(1, 1)
@@ -61,12 +61,14 @@ class TestCharacter(unittest.TestCase):
             self.char.use_potion(potion)
 
     def test_upgrade_item_in_inventory(self):
+        self.char.earn_gold(100)
         sword = Sword(1, 1)
         self.char._inventory.append(sword)
         self.char.upgrade_item(sword)
         self.assertEqual(sword.get_level(), 2)
 
     def test_upgrade_item_equipped(self):
+        self.char.earn_gold(100)
         sword = Sword(1, 1)
         self.char._inventory.append(sword)
         self.char.equip_item(sword)
@@ -92,8 +94,9 @@ class TestCharacter(unittest.TestCase):
             self.char.upgrade_item(dummy)
 
     def test_spend_gold(self):
+        self.char.earn_gold(50)
         self.char.spend_gold(50)
-        self.assertEqual(self.char.get_gold(), 50)
+        self.assertEqual(self.char.get_gold(), 0)
 
     def test_spend_too_much_gold(self):
         with self.assertRaises(ValueError):

@@ -12,7 +12,7 @@ class Character(Entity):
     def __init__(self, name, level=1, base_attack=10, base_armor=0, base_max_health=100, base_max_stamina=100):
         self._inventory = []
         self._equipped = {}
-        self._gold = 1000
+        self._gold = 0
         self._xp = 0
         super().__init__(name, level, base_attack, base_armor, base_max_health, base_max_stamina)
         self._update_stats()

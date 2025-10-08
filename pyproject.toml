@@ -12,7 +12,8 @@ dependencies = [
 ]
 
 [project.scripts]
-simple-rpg = "simple_rpg:main"
+simple-rpg = "simple_rpg.ui.main_ui:main"
+
 
 [build-system]
 requires = ["uv_build>=0.8.17,<0.9.0"]
