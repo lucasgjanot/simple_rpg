@@ -61,7 +61,8 @@ class Entity(ABC):
         damage_taken = max(0, amount - self.get_armor())
         self._health -= damage_taken
         if not self.is_alive():
-            return f"{self.get_name()} has died."
+            return (f"{self.get_name()} took {damage_taken} damage. Current health: {self._health}/{self._max_health}\n"
+                    f"{self.get_name()} has died.")
         else:
             return f"{self.get_name()} took {damage_taken} damage. Current health: {self._health}/{self._max_health}"
 

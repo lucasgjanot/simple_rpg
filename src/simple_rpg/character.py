@@ -12,7 +12,7 @@ class Character(Entity):
     def __init__(self, name, level=1, base_attack=10, base_armor=0, base_max_health=100, base_max_stamina=100):
         self._inventory = []
         self._equipped = {}
-        self._gold = 0
+        self._gold = 1000
         self._xp = 0
         super().__init__(name, level, base_attack, base_armor, base_max_health, base_max_stamina)
         self._update_stats()
@@ -108,13 +108,18 @@ class Character(Entity):
 
         if potion not in equipped_potions:
             raise ValueError("Potion must be equipped to use.")
+        
+        equipped_potions.remove(potion)
 
         if potion.get_potiontype() == PotionType.HEALTH:
             self.restore_health(potion.get_amount())
+            return f"{self._name} heals {potion.get_amount()} of health"
         elif potion.get_potiontype() == PotionType.STAMINA:
             self.restore_stamina(potion.get_amount())
+            return f"{self._name} gains {potion.get_amount()} of stamina"
 
-        equipped_potions.remove(potion)
+        
+        
 
     def get_equipped_armor(self):
         return self._equipped.get("armor", None)
@@ -157,6 +162,7 @@ class Character(Entity):
                     raise ValueError("Item must be in equipped to upgrade.")
 
         try:
+            old = item.get_name()
             upgrade_cost = item.get_upgrade_cost()
         except ValueError as e:
             raise ValueError(f"Cannot upgrade item: {e}")
@@ -168,20 +174,24 @@ class Character(Entity):
         item.upgrade()
         self._update_stats()
 
-        return f"{item.get_name()} upgraded! Gold remaining: {self._gold}"
+        return (f"{old} upgraded! Gold remaining: {self._gold}\n"
+                f"Lucas now have a {item.get_name()}")
 
     def gain_xp(self, amount):
         self._xp += amount
+        level_up_msgs = []
         while self._xp >= self._xp_next_level:
             self._xp -= self._xp_next_level
-            self.level_up()
+            msg = self.level_up()
+            level_up_msgs.append(msg)
+        return level_up_msgs 
 
     def level_up(self):
         self._level += 1
-        print(f"{self.get_name()} leveled up to {self.get_level()}!")
         self._update_stats()
         self._health = self._max_health
         self._stamina = self._max_stamina
+        return f"{self.get_name()} leveled up to {self.get_level()}!"
 
     def get_attack_stamina_cost(self):
         weapon = self.get_equipped_weapon()
