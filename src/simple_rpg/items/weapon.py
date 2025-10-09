@@ -38,8 +38,8 @@ class WeaponMaterial(Enum):
     LEVEL_1 = ("Wood", 300)
     LEVEL_2 = ("Bronze", 500)
     LEVEL_3 = ("Iron", 800)
-    LEVEL_4 = ("Mithril", 1100)
-    LEVEL_5 = ("Steel", 0)
+    LEVEL_4 = ("Steel", 1100)
+    LEVEL_5 = ("Mithril", 0)
 
     def __init__(self, name, upgrade_cost):
         self._name = name

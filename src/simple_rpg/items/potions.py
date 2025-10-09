@@ -93,6 +93,8 @@ class Potion(Item):
                 f"level={self.get_potionlevel()}, amount={self.get_amount()}, value={self.get_value()})")
     
     def __eq__(self, value):
+        if not isinstance(value, Potion):
+            return False
         return (
             (self.get_potionlevel() == value.get_potionlevel()) and
             (self.get_potiontype() == value.get_potiontype())
