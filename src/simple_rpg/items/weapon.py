@@ -95,7 +95,7 @@ class Weapon(Item, ABC):
 
     @staticmethod
     def calculate_damage(level, material_level):
-        return level * 10 + material_level * 5
+        return level * 1.5 + material_level * 1.5
 
     @staticmethod
     def calculate_value(level, material_level):

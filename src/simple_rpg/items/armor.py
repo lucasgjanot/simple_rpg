@@ -101,7 +101,7 @@ class Armor(Item):
 
     @staticmethod
     def calculate_armor(level, material_level):
-        return level * 10 + material_level * 10
+        return level * 1.5 + material_level * 1.5
 
 
     @staticmethod
